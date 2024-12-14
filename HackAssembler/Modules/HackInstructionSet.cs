@@ -82,11 +82,11 @@ public  class HackInstructionSet
 
     public  string Dest(string microcode)
     {
-        return _instructionSet["dest"][microcode];
+        return string.IsNullOrWhiteSpace(microcode) ? _instructionSet["dest"]["null"] : _instructionSet["dest"][microcode];
     }
 
     public  string Jump(string microcode)
     {
-        return _instructionSet["jump"][microcode];
+        return string.IsNullOrWhiteSpace(microcode) ? _instructionSet["jump"]["null"] : _instructionSet["jump"][microcode];
     }
 }

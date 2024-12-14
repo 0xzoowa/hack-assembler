@@ -44,6 +44,8 @@ public static class Program
         {"SCREEN" , 16384},
         {"KBD" , 24576},
     };
+
+    //private static List<string> content = [];
     
     static Program()
     {
@@ -58,9 +60,27 @@ public static class Program
 
     private static void Main(string[] args)
     {
-        SymbolTable.GetAllEntries();
+        //SymbolTable.GetAllEntries();
         var (res, file) = VerifyFile(args);
-        Console.WriteLine(!res ? "invalid file" : file);
+        if (!res) 
+        {
+            Console.WriteLine("invalid file");
+        }
+        else
+        {
+            var outPath = OutPath(file);
+            var parser = new Parser(file);
+            var content = parser.ParseInstruction();
+            using var sw = new StreamWriter(outPath);
+            foreach (var line in content)
+            {
+                sw.WriteLine(line);
+               
+            }
+            sw.Close();
+            Console.WriteLine("done");
+        }
+        
     }
 
     private static (bool, string) VerifyFile(IEnumerable<string> args)
@@ -68,7 +88,7 @@ public static class Program
         //if multiple valid files are supplied, file defaults to first encountered file
         try
         {
-            var files = args.Where(t => Path.GetExtension(t) == ".txt").ToList();
+            var files = args.Where(t => Path.GetExtension(t) == ".asm").ToList();
             return files.Count > 0 ? (true, files[0]) : (false, "");
         }
         catch (Exception e)
@@ -77,5 +97,12 @@ public static class Program
             return (false, "");
         }
         
+    }
+
+    private static string OutPath(string filePath)
+    {
+        var directory = Path.GetDirectoryName(filePath);
+        
+        return string.IsNullOrWhiteSpace(directory) ? "Program.hack" : Path.Combine(directory, "Program.hack");
     }
 }

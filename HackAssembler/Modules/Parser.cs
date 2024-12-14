@@ -14,11 +14,11 @@ public class Parser
         {
             /* initializes necessary variables */
             _sr = new StreamReader(path); // Open input file for reading
-            if (!HasMoreLines())
-            {
-                Close();
-            }
-            Advance();
+            // if (!HasMoreLines())
+            // {
+            //     Close();
+            // }
+            // Advance();
         }
         else
         {
@@ -44,7 +44,7 @@ public class Parser
     { 
         var line = string.Empty;
 
-        // Keep reading the next line until we get a valid instruction
+        // Keep reading the next line 
         while ((line = _sr.ReadLine()) != null)
         {
             // Skip empty lines
@@ -96,19 +96,21 @@ public class Parser
 
     }
     
-    public string Symbol()
-    {
-        throw new NotImplementedException(); //extend to handle symbols
+    private string? Symbol()
+    { 
+        //extend to handle symbols
+        var instruction = GetCurrentInstruction();
+        return instruction.StartsWith('@') ? instruction.Split('@')[1] : null;
     }
     
-    public string? Dest()
+    private string? Dest()
     {
         var instruction = GetCurrentInstruction();
         
         return instruction.Contains('=') ? instruction.Split('=')[0].Trim() : null;
     }
     
-    public string Comp()
+    private string Comp()
     {
         var instruction = GetCurrentInstruction();
         var comPart = instruction;
@@ -126,14 +128,14 @@ public class Parser
         return comPart.Trim();
     }
     
-    public string? Jump()
+    private string? Jump()
     {
         var instruction = GetCurrentInstruction();
         
         return instruction.Contains(';') ? instruction.Split(';')[1] : null;
     }
 
-    public ICollection<string> ParseInstruction()
+    public IEnumerable<string> ParseInstruction()
     {
         var binaryRepresentation = new List<string>();
         
@@ -146,23 +148,26 @@ public class Parser
             {
                 case "A_INSTRUCTION":
                 case "L_INSTRUCTION":
-                    Symbol(); // does swapping, does not return any values
+                    var a = int.Parse(Symbol() ?? string.Empty); // does swapping, does not return any values
+                    var data = Convert.ToString(a, 2).PadLeft(16, '0');;
+                    binaryRepresentation.Add(data);
                     break;
                 case "C_INSTRUCTION":
                     var destination = Dest();
                     var computation = Comp();
                     var jump = Jump();
                     var code = new HackInstructionSet();
-                    var b1 = code.Dest(destination!);
-                    var b2 = code.Comp(computation);
-                    var b3 = code.Jump(jump!);
-                    var instructionBinary = b1 + b2 + b3;
+                    var destBinary = code.Dest(destination!);
+                    var compBinary = code.Comp(computation);
+                    var jumpBinary = code.Jump(jump!);
+                    var instructionBinary = "111" + compBinary + destBinary + jumpBinary;
                     binaryRepresentation.Add(instructionBinary);
                     break;
             }
 
 
         }
+        Close();
         return binaryRepresentation;
     }
     
