@@ -1,30 +1,29 @@
 using static System.Text.RegularExpressions.Regex;
 using System.IO;
+using HackAssembler.Types;
 
 namespace HackAssembler.Modules;
 
 public class Parser
 {
+    private static readonly SymbolTable SymbolTable = new();
     private readonly StreamReader _sr;
     private string _currentInstruction;
+    private int _instructionCount = -1; //initialized to no valid instruction
+    private int  memory = 16;
 
     public Parser(string path)
     {
         if (File.Exists(path))
         {
-            /* initializes necessary variables */
             _sr = new StreamReader(path); // Open input file for reading
-            // if (!HasMoreLines())
-            // {
-            //     Close();
-            // }
-            // Advance();
         }
         else
         {
             Console.WriteLine("Invalid File");
         }
     }
+    
     private string GetCurrentInstruction()
     {
         return _currentInstruction;
@@ -52,7 +51,6 @@ public class Parser
             {
                 continue;   //skips the current iteration
             }
-            
             var commentIndex = line.IndexOf("//");
             if (commentIndex != -1)
             {
@@ -68,7 +66,7 @@ public class Parser
         }
     }
 
-    private string InstructionType()
+    private InstructionType InstructionType()
     {
         var currentInstruction = GetCurrentInstruction();
        
@@ -77,30 +75,89 @@ public class Parser
             var secondHalf = currentInstruction.Substring(1);
             if(IsMatch(secondHalf.Trim(), @"^\d+$"))
             {
-                   return "A_INSTRUCTION";
+                _instructionCount++;
+                 return Types.InstructionType.A_INSTRUCTION;
             }
+          
         }
         if (currentInstruction.StartsWith('(') && currentInstruction.EndsWith(')'))
         {
             var labelContent = currentInstruction.Substring(1, currentInstruction.Length - 2).Trim();
             if (!string.IsNullOrEmpty(labelContent))
             {
-                return "L_INSTRUCTION";
+                return Types.InstructionType.L_INSTRUCTION;
             }
         }
-        if (currentInstruction.Contains('=') || currentInstruction.Contains(';')) 
+        if (currentInstruction.Contains('=') || currentInstruction.Contains(';'))
         {
-            return "C_INSTRUCTION";
+            _instructionCount++;
+            return Types.InstructionType.C_INSTRUCTION;
         }
-        return "UNKNOWN_INSTRUCTION";
+        return Types.InstructionType.UNKNOWN_INSTRUCTION;
 
     }
     
-    private string? Symbol()
-    { 
-        //extend to handle symbols
+    private string Symbol()
+    {
         var instruction = GetCurrentInstruction();
-        return instruction.StartsWith('@') ? instruction.Split('@')[1] : null;
+        var aout = string.Empty;
+        
+        var iType = InstructionType();
+        
+        switch (iType)
+        {
+            /*
+             * 
+             *    - handle edge cases
+             *    - error handling
+             *    - memory management
+             */
+            
+            case Types.InstructionType.A_INSTRUCTION:
+                
+                //@ - 123 => 123
+                //@ - KBD  = addr from symbol table
+                //@ - LOOP(validate) is in symbol table => ADDR 
+                //@ - R1 is in symbol table => ADDR 
+                //@ - sum (letters in all lower case: validate) sum in symbol table ? return addr : add entry (sum, 16) RAM then return addr
+                
+                var part = instruction.Split('@')[1];
+                
+                if (IsMatch(part, @"^\d+$"))
+                {
+                    aout = part;
+                }
+
+                else if (SymbolTable.Contains(part)) //@R1 @sum @LOOP 
+                {
+                    var addr = SymbolTable.GetAddress(part);
+                    aout = addr.ToString();
+                }
+
+                else if (!SymbolTable.Contains(part) && IsMatch(part, "^[a-z]+$"))
+                {
+                    SymbolTable.AddEntry(part,memory );
+                    memory++;
+                    var addr = SymbolTable.GetAddress(part);
+                    aout = addr.ToString();
+                }
+                break;
+            
+            case Types.InstructionType.L_INSTRUCTION:
+                
+                var label = instruction.Substring(0, instruction.Length - 2);
+                aout = label;
+                break;
+            
+            case Types.InstructionType.C_INSTRUCTION:
+            case Types.InstructionType.UNKNOWN_INSTRUCTION:
+                break;
+                
+        }
+
+        return aout;
+        
+     
     }
     
     private string? Dest()
@@ -118,11 +175,19 @@ public class Parser
         if (instruction.Contains('=') )
         {
             comPart =  instruction.Split('=')[1];
+            if (comPart.Contains(';'))
+            {
+                comPart = comPart.Split(';')[0];
+            }
+
+            return comPart;
         }
         
         if (instruction.Contains(';') )
         {
             comPart =  instruction.Split(';')[0];
+
+            return comPart;
         }
 
         return comPart.Trim();
@@ -132,10 +197,10 @@ public class Parser
     {
         var instruction = GetCurrentInstruction();
         
-        return instruction.Contains(';') ? instruction.Split(';')[1] : null;
+        return instruction.Contains(';') ? instruction.Split(';')[1].Trim() : null;
     }
 
-    public IEnumerable<string> ParseInstruction()
+    public IEnumerable<string> ParseInstruction() //second pass
     {
         var binaryRepresentation = new List<string>();
         
@@ -146,13 +211,12 @@ public class Parser
             var iType = InstructionType();
             switch (iType)
             {
-                case "A_INSTRUCTION":
-                case "L_INSTRUCTION":
-                    var a = int.Parse(Symbol() ?? string.Empty); // does swapping, does not return any values
+                case Types.InstructionType.A_INSTRUCTION:
+                    var a = int.Parse(Symbol()); 
                     var data = Convert.ToString(a, 2).PadLeft(16, '0');;
                     binaryRepresentation.Add(data);
                     break;
-                case "C_INSTRUCTION":
+                case Types.InstructionType.C_INSTRUCTION:
                     var destination = Dest();
                     var computation = Comp();
                     var jump = Jump();
@@ -170,6 +234,35 @@ public class Parser
         Close();
         return binaryRepresentation;
     }
-    
+
+    public void FirstPass()
+    {
+        while (HasMoreLines())
+        {
+            Advance();
+            var instruction = GetCurrentInstruction();
+            var iType = InstructionType();
+            switch (iType)
+            {
+                case Types.InstructionType.A_INSTRUCTION:
+                case Types.InstructionType.C_INSTRUCTION:
+                case Types.InstructionType.UNKNOWN_INSTRUCTION:
+                    continue;
+                
+                case Types.InstructionType.L_INSTRUCTION:
+                    var label = Symbol(); 
+                    if (SymbolTable.Contains(label)) 
+                    {
+                        continue;
+                    }
+
+                    SymbolTable.AddEntry(label, _instructionCount+1);
+                    break;
+                
+                
+            }
+        }
+      
+    }
 }
 

@@ -1,3 +1,5 @@
+using HackAssembler.Types;
+
 namespace HackAssembler.Modules;
 
 public class SymbolTable
@@ -6,6 +8,14 @@ public class SymbolTable
     public SymbolTable()
     {
         symbolTable = new Dictionary<string, int>();
+
+    }
+    public SymbolTable(Dictionary<string, int> custom) : this()
+    {
+        foreach (var entry in custom)
+        {
+            AddEntry(entry.Key, entry.Value); //ISA.HackPredefinedSymbol is custom
+        }
 
     }
 

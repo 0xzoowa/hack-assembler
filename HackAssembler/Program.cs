@@ -5,7 +5,7 @@ using System.IO;
 
 public static class Program
 {
-    private static readonly SymbolTable SymbolTable = new();
+    private static readonly SymbolTable symbolTable = new();
     private static readonly Dictionary<string, int> PredefinedSymbol = new()
     {
         {"R1" , 1},
@@ -31,16 +31,11 @@ public static class Program
         {"SCREEN" , 16384},
         {"KBD" , 24576},
     };
-
-    //private static List<string> content = [];
     
     static Program()
     {
         
-        foreach (var entry in PredefinedSymbol)
-        {
-            SymbolTable.AddEntry(entry.Key, entry.Value);
-        } 
+        symbolTable.GetAllEntries();
     
     }   
 
@@ -55,8 +50,14 @@ public static class Program
         }
         else
         {
-            var outPath = OutPath(file);
             var parser = new Parser(file);
+            
+            //first pass
+            parser.FirstPass(); //add all labels to symbol table
+            
+            
+            //second pass
+            var outPath = OutPath(file);
             var content = parser.ParseInstruction();
             using var sw = new StreamWriter(outPath);
             foreach (var line in content)
