@@ -4,20 +4,31 @@ namespace HackAssembler.Modules;
 
 public class SymbolTable
 {
+    private static SymbolTable _instance;
     private readonly Dictionary<string,int> symbolTable;
-    public SymbolTable()
+
+    private SymbolTable(Dictionary<string, int>? custom = null) 
     {
         symbolTable = new Dictionary<string, int>();
-
-    }
-    public SymbolTable(Dictionary<string, int> custom) : this()
-    {
-        foreach (var entry in custom)
+        if (custom != null)
         {
-            AddEntry(entry.Key, entry.Value); //ISA.HackPredefinedSymbol is custom
+            foreach (var entry in custom)
+            {
+                AddEntry(entry.Key, entry.Value); //ISA.HackPredefinedSymbol is custom
+            }
         }
-
     }
+    
+    public static SymbolTable Instance(Dictionary<string, int>? custom = null)
+    {
+        // Check if the _instance is null (meaning no instance has been created yet)
+        if (_instance == null)
+        {
+            _instance = new SymbolTable(custom);
+        }
+        return _instance;
+    }
+
 
     public void AddEntry(string symbol, int address)
     {

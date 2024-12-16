@@ -1,16 +1,15 @@
 using static System.Text.RegularExpressions.Regex;
-using System.IO;
 using HackAssembler.Types;
 
 namespace HackAssembler.Modules;
 
 public class Parser
 {
-    private static readonly SymbolTable SymbolTable = new();
+    public static readonly SymbolTable SymbolTable = SymbolTable.Instance(ISA.HackPredefinedSymbol);
     private readonly StreamReader _sr;
     private string _currentInstruction;
     private int _instructionCount = -1; //initialized to no valid instruction
-    private int  memory = 16;
+    private int  _memory = 16;
 
     public Parser(string path)
     {
@@ -62,6 +61,17 @@ public class Parser
                 continue;
             }
             _currentInstruction = line;
+            switch (InstructionType())
+            {
+                case Types.InstructionType.A_INSTRUCTION:
+                case Types.InstructionType.C_INSTRUCTION:
+                    _instructionCount++;
+                    break;
+                case Types.InstructionType.L_INSTRUCTION:
+                case Types.InstructionType.UNKNOWN_INSTRUCTION:
+                    continue;
+                    
+            }
             break;
         }
     }
@@ -75,7 +85,6 @@ public class Parser
             var secondHalf = currentInstruction.Substring(1);
             if(IsMatch(secondHalf.Trim(), @"^\d+$"))
             {
-                _instructionCount++;
                  return Types.InstructionType.A_INSTRUCTION;
             }
           
@@ -90,7 +99,6 @@ public class Parser
         }
         if (currentInstruction.Contains('=') || currentInstruction.Contains(';'))
         {
-            _instructionCount++;
             return Types.InstructionType.C_INSTRUCTION;
         }
         return Types.InstructionType.UNKNOWN_INSTRUCTION;
@@ -136,8 +144,8 @@ public class Parser
 
                 else if (!SymbolTable.Contains(part) && IsMatch(part, "^[a-z]+$"))
                 {
-                    SymbolTable.AddEntry(part,memory );
-                    memory++;
+                    SymbolTable.AddEntry(part,_memory );
+                    _memory++;
                     var addr = SymbolTable.GetAddress(part);
                     aout = addr.ToString();
                 }
@@ -170,22 +178,22 @@ public class Parser
     private string Comp()
     {
         var instruction = GetCurrentInstruction();
-        var comPart = instruction;
+        var comPart = instruction; //A=D+1;JGT 
 
         if (instruction.Contains('=') )
         {
-            comPart =  instruction.Split('=')[1];
-            if (comPart.Contains(';'))
+            comPart =  instruction.Split('=')[1];//D+1;JGT 
+            if (comPart.Contains(';')) 
             {
-                comPart = comPart.Split(';')[0];
+                comPart = comPart.Split(';')[0];//D+1
             }
 
             return comPart;
         }
         
-        if (instruction.Contains(';') )
+        if (instruction.Contains(';') )//D+1;JGT 
         {
-            comPart =  instruction.Split(';')[0];
+            comPart =  instruction.Split(';')[0];//D+1
 
             return comPart;
         }
@@ -240,7 +248,6 @@ public class Parser
         while (HasMoreLines())
         {
             Advance();
-            var instruction = GetCurrentInstruction();
             var iType = InstructionType();
             switch (iType)
             {
@@ -256,13 +263,24 @@ public class Parser
                         continue;
                     }
 
-                    SymbolTable.AddEntry(label, _instructionCount+1);
+                    SymbolTable.AddEntry(label, _instructionCount + 1);
+                    ResetState();
                     break;
                 
                 
             }
         }
       
+    }
+    
+    private void ResetState()
+    {
+        // Reset file stream to the start of the file before calling second pass
+        _sr.BaseStream.Seek(0, SeekOrigin.Begin);
+        _sr.DiscardBufferedData();
+
+        // Reset instruction counter before calling second pass
+        _instructionCount = -1;
     }
 }
 
