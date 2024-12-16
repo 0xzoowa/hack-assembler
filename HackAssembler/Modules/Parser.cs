@@ -60,7 +60,7 @@ public class Parser
             {
                 continue;
             }
-            _currentInstruction = line;
+            _currentInstruction = line.Trim();
             switch (InstructionType())
             {
                 case Types.InstructionType.A_INSTRUCTION:
@@ -69,7 +69,7 @@ public class Parser
                     break;
                 case Types.InstructionType.L_INSTRUCTION:
                 case Types.InstructionType.UNKNOWN_INSTRUCTION:
-                    continue;
+                    break;
                     
             }
             break;
@@ -82,11 +82,12 @@ public class Parser
        
         if (currentInstruction.StartsWith('@')) //extend to handle symbols
         { 
-            var secondHalf = currentInstruction.Substring(1);
-            if(IsMatch(secondHalf.Trim(), @"^\d+$"))
-            {
-                 return Types.InstructionType.A_INSTRUCTION;
-            }
+            return Types.InstructionType.A_INSTRUCTION;
+            // var secondHalf = currentInstruction.Substring(1);
+            // if(IsMatch(secondHalf.Trim(), @"^\d+$"))
+            // {
+            //     
+            // }
           
         }
         if (currentInstruction.StartsWith('(') && currentInstruction.EndsWith(')'))
@@ -153,7 +154,7 @@ public class Parser
             
             case Types.InstructionType.L_INSTRUCTION:
                 
-                var label = instruction.Substring(0, instruction.Length - 2);
+                var label = instruction.Substring(1, instruction.Length - 2);
                 aout = label;
                 break;
             
@@ -229,9 +230,9 @@ public class Parser
                     var computation = Comp();
                     var jump = Jump();
                     var code = new HackInstructionSet();
-                    var destBinary = code.Dest(destination!);
-                    var compBinary = code.Comp(computation);
-                    var jumpBinary = code.Jump(jump!);
+                    var destBinary = code.Dest(destination!.Trim());
+                    var compBinary = code.Comp(computation.Trim());
+                    var jumpBinary = code.Jump(jump.Trim()??"null");
                     var instructionBinary = "111" + compBinary + destBinary + jumpBinary;
                     binaryRepresentation.Add(instructionBinary);
                     break;
@@ -264,13 +265,12 @@ public class Parser
                     }
 
                     SymbolTable.AddEntry(label, _instructionCount + 1);
-                    ResetState();
                     break;
                 
                 
             }
         }
-      
+        ResetState();
     }
     
     private void ResetState()

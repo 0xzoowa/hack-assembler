@@ -7,11 +7,11 @@ public static class Program
 {
     private static readonly SymbolTable symbolTable = Parser.SymbolTable;
     
-    static Program()
-    {
-        Console.WriteLine("from parser");
-        symbolTable.GetAllEntries();
-    }   
+    // static Program()
+    // {
+    //     Console.WriteLine("from parser");
+    //     symbolTable.GetAllEntries();
+    // }   
 
 
     private static void Main(string[] args)
@@ -27,6 +27,7 @@ public static class Program
             
             //first pass
             parser.FirstPass(); //add all labels to symbol table
+            symbolTable.GetAllEntries();
             
             //second pass
             var outPath = OutPath(file);
@@ -40,10 +41,6 @@ public static class Program
             sw.Close();
             Console.WriteLine("done");
         }
-
-        Console.WriteLine("from main");
-        symbolTable.GetAllEntries();
-        
     }
 
     private static (bool, string) VerifyFile(IEnumerable<string> args)
