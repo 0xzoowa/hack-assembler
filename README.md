@@ -1,35 +1,36 @@
 # hack-assembler
-# Precursor: The Hack Computer => System Integration, ISA, and Assembly
+
+# The Hack Computer => Core Components, System Integration, ISA, and Assembly
 
 ## Table of Contents
 
 1. [Foundation: Basic Logic Gates](#foundation-basic-logic-gates)
-    - [NAND Gate: The Universal Building Block](#nand-gate-the-universal-building-block)
-    - [Fundamental Multi-Bit Gates](#fundamental-multi-bit-gates)
+   - [NAND Gate: The Universal Building Block](#nand-gate-the-universal-building-block)
+   - [Fundamental Multi-Bit Gates](#fundamental-multi-bit-gates)
 2. [Arithmetic Components](#arithmetic-components)
-    - [Half Adder](#half-adder)
-    - [Full Adder](#full-adder)
-    - [ALU (Arithmetic Logic Unit)](#alu-arithmetic-logic-unit)
+   - [Half Adder](#half-adder)
+   - [Full Adder](#full-adder)
+   - [ALU (Arithmetic Logic Unit)](#alu-arithmetic-logic-unit)
 3. [Sequential Logic](#sequential-logic)
-    - [D Flip-Flop (DFF) Deep Dive](#d-flip-flop-dff-deep-dive)
-    - [Registers](#registers)
+   - [D Flip-Flop (DFF) Deep Dive](#d-flip-flop-dff-deep-dive)
+   - [Registers](#registers)
 4. [Memory Hierarchy](#memory-hierarchy)
-    - [RAM Construction](#ram-construction)
+   - [RAM Construction](#ram-construction)
 5. [I/O System](#io-system)
-    - [Memory-Mapped I/O](#memory-mapped-io)
-    - [Screen Interface](#screen-interface)
-    - [Keyboard Interface](#keyboard-interface)
+   - [Memory-Mapped I/O](#memory-mapped-io)
+   - [Screen Interface](#screen-interface)
+   - [Keyboard Interface](#keyboard-interface)
 6. [System Integration](#system-integration)
-    - [Bus Architecture](#bus-architecture)
+   - [Bus Architecture](#bus-architecture)
 7. [Instruction Set Architecture (ISA) and CPU Implementation](#instruction-set-architecture-isa-and-cpu-implementation)
-    - [ISA Overview](#isa-overview)
-    - [CPU Implementation](#cpu-implementation)
+   - [ISA Overview](#isa-overview)
+   - [CPU Implementation](#cpu-implementation)
 8. [The Hack Assembler](#the-hack-assembler)
-    - [Core Features](#core-features)
-    - [Two-Pass Assembly](#two-pass-assembly)
-    - [Assembler Functionality](#assembler-functionality)
+   - [Core Features](#core-features)
+   - [Two-Pass Assembly](#two-pass-assembly)
+   - [Assembler Functionality](#assembler-functionality)
 
-## 1. Foundation: Basic Logic Gates
+### Foundation: Basic Logic Gates
 
 ### NAND Gate: The Universal Building Block
 
@@ -50,7 +51,7 @@ Multi-bit gates operate on bus-width inputs (16-bit in Hack):
 - Multi-bit Multiplexer (Mux): Selects between two 16-bit inputs
 - Multi-bit Demultiplexer (DMux): Routes input to one of two 16-bit outputs
 
-## 2. Arithmetic Components
+### Arithmetic Components
 
 ### Half Adder
 
@@ -64,6 +65,7 @@ Outputs:
 - carry (a AND b)
 
 Implementation:
+
 ```
 sum = a XOR b
 carry = a AND b
@@ -114,7 +116,7 @@ The Hack ALU is a sophisticated component that performs:
 - zr: True if output equals zero
 - ng: True if output is negative
 
-## 3. Sequential Logic
+### Sequential Logic
 
 ### D Flip-Flop (DFF) Deep Dive
 
@@ -154,7 +156,7 @@ Applications:
 - D-Register: Data manipulation
 - Program Counter: Instruction sequencing
 
-## 4. Memory Hierarchy
+### Memory Hierarchy
 
 ### RAM Construction
 
@@ -188,7 +190,7 @@ Implementation:
 - Additional address bits for bank selection
 - Maintained 16-bit data width
 
-## 5. I/O System
+### I/O System
 
 ### Memory-Mapped I/O
 
@@ -214,7 +216,7 @@ Implementation:
 - ASCII code representation
 - Interrupt-free polling design
 
-## 6. System Integration
+### System Integration
 
 ### Bus Architecture
 
@@ -248,18 +250,20 @@ The Hack computer employs a simplified but effective bus architecture:
 - ALU operation select
 - Program Counter control
 
-## 7. Instruction Set Architecture (ISA) and CPU Implementation
+### Instruction Set Architecture (ISA) and CPU Implementation
 
 ### ISA Overview
 
 **A-Instructions (Address/Value Instructions):**
 
 Format: 0vvvvvvvvvvvvvvv
+
 ```
-│└───────────────┘
-│      15-bit value/address
-└── MSB=0 indicates A-instruction
+        │└───────────────┘
+        │      15-bit value/address
+        └── MSB=0 indicates A-instruction
 ```
+
 Functions:
 
 - Load constant into A-register
@@ -270,19 +274,20 @@ Functions:
 
 Format:
 111accccccdddjjj
+
 ```
 ││││││││││││││││
 ││└┴┴┴┴┴┘│││└┴┴┘
-││comp   │││jump
+││c- comp   │││j- jump
 ││       ││└── j3
 ││       │└─── j2
 ││       └──── j1
-││dest
+││d- dest
 │└── a-bit
 └─── op-code (111)
 ```
 
-Components:
+**Components:**
 
 A. Computation Field (cccccc):
 
@@ -305,15 +310,14 @@ B. Destination Field (ddd):
 - d2: write to D-register
 - d3: write to Memory[A]
 
-
 C. Jump Field (jjj):
 
-- 000: no jump     | 100: JLT (jump if < 0)
-- 001: JGT (> 0)   | 101: JLE (≤ 0)
-- 010: JEQ (= 0)   | 110: JNE (≠ 0)
-- 011: JGE (≥ 0)   | 111: JMP (unconditional)
+- 000: no jump | 100: JLT (jump if < 0)
+- 001: JGT (> 0) | 101: JLE (≤ 0)
+- 010: JEQ (= 0) | 110: JNE (≠ 0)
+- 011: JGE (≥ 0) | 111: JMP (unconditional)
 
-###CPU Implementation
+### CPU Implementation
 
 **Control Unit**
 
@@ -322,19 +326,18 @@ C. Jump Field (jjj):
 - Generates control signals
 - Coordinates data flow
 
-##The Instruction Cycle**
+### The Instruction Cycle
 
 Each instruction executes in ONE clock cycle through these phases:
 
-A. Fetch Phase
+**A. Fetch Phase**
 
 What happens:
 
 - PC (Program Counter) outputs the address of next instruction (PC → ROM address)
 - Instruction is read from ROM at this address
 
-
-B. Decode Phase
+**B. Decode Phase**
 
 For A-Instructions (0xxxxxxxxxxxxxxx):
 
@@ -344,11 +347,11 @@ For C-Instructions (111accccccdddjjj):
 
 - Split instruction into parts:
 
-  * comp: what to compute
-  * dest: where to store result
-  * jump: whether to jump
+  - comp: what to compute
+  - dest: where to store result
+  - jump: whether to jump
 
-C. Execute Phase
+**C. Execute Phase**
 
 For A-Instructions:
 
@@ -359,11 +362,10 @@ For C-Instructions:
 - ALU performs computation
 - If accessing memory:
 
-  * Read: Get value from RAM[A]
-  * Write: Prepare value for RAM[A]
+  - Read: Get value from RAM[A]
+  - Write: Prepare value for RAM[A]
 
-
-D. Write Back Phase
+**D. Write Back Phase**
 
 For A-Instructions:
 
@@ -373,124 +375,118 @@ For A-Instructions:
 For C-Instructions:
 
 - Store result based on dest bits:
-  * A register (if specified)
-  * D register (if specified)
-  * Memory[A] (if specified)
+
+  - A register (if specified)
+  - D register (if specified)
+  - Memory[A] (if specified)
 
 - Update PC:
-  * Jump: Set PC to A register value
-  * No jump: Increment PC
+  - Jump: Set PC to A register value
+  - No jump: Increment PC
 
+### Example Instruction Execution
 
-Example Instruction Execution
+**A-Instruction Example: @100**
 
-A-Instruction Example: @100
+- Fetch: Get instruction from ROM
+- Decode: Recognize as A-instruction
+- Execute: Prepare value 100
+- Write:
+  - Store 100 in A register
+  - Increment PC
 
-I. Fetch: Get instruction from ROM
-II. Decode: Recognize as A-instruction
-III. Execute: Prepare value 100
-IV. Write: 
-    - Store 100 in A register
-    - Increment PC
+**C-Instruction Example: D=M+1**
 
+- Fetch: Get instruction from ROM
+- Decode:
 
-C-Instruction Example: D=M+1
+  - comp: M+1
+  - dest: D
+  - jump: none
 
-I. Fetch: Get instruction from ROM
-II. Decode:
-    - comp: M+1
-    - dest: D
-    - jump: none
+- Execute:
 
-III. Execute:
-    - Read M (RAM[A])
-    - ALU adds 1
+  - Read M (RAM[A])
+  - ALU adds 1
 
-IV. Write:
-    - Store result in D register
-    - Increment PC
+- Write:
+  - Store result in D register
+  - Increment PC
 
-## 8. The Hack Assembler
+### The Hack Assembler
 
-###Core Features
+### Core Features
 
-**Symbol Management**
+### **Symbol Management**
 
-1. Predefined Symbols:
-   
-   - R0-R15: RAM addresses 0-15
-   - SCREEN: 16384
-   - KBD: 24576
-   - SP: 0
-   - LCL: 1
-   - ARG: 2
-   - THIS: 3
-   - THAT: 4
-  
+- Predefined Symbols:
 
-2. Label Symbols:
+  - R0-R15: RAM addresses 0-15
+  - SCREEN: 16384
+  - KBD: 24576
+  - SP: 0
+  - LCL: 1
+  - ARG: 2
+  - THIS: 3
+  - THAT: 4
+
+- Label Symbols:
 
   - Marks instruction locations
   - Format: (LABEL)
   - Resolved to ROM addresses
 
-3. Variable Symbols:
+- Variable Symbols:
 
-   - Automatically allocated from RAM[16] onward
-   - First use creates allocation
+  - Automatically allocated from RAM[16] onward
+  - First use creates allocation
 
-    ##Two-Pass Assembly
+### **Two-Pass Assembly**
 
-    First Pass:
+- First Pass:
 
-    A. Scan for label declarations
-    B. Build symbol table
-    C. Count instruction positions
+  - Scan for label declarations
+  - Build symbol table
+  - Count instruction positions
 
-    Second Pass:
+- Second Pass:
 
-    A. Process instructions
-    B. Resolve symbols
-    C. Generate binary code
+  - Process instructions
+  - Resolve symbols
+  - Generate binary code
 
-    ###Assembler Functionality
+### Assembler Functionality
 
-    A-Instruction Translation
-    
+**A-Instruction Translation**
+
     @value  →  0vvvvvvvvvvvvvvv
     @symbol →  0vvvvvvvvvvvvvvv (where v is symbol's value)
 
-
-    C-Instruction Translation
-
+**C-Instruction Translation**
 
     dest=comp;jump  →  111accccccdddjjj
 
+- Computation Translation:
 
-    I. Computation Translation:
-   
-       D+1   →  011111
-       A&D   →  000000
-       M-1   →  110010
- 
+  D+1 → 011111
+  A&D → 000000
+  M-1 → 110010
 
-    II. Destination Translation:
-   
-       M     →  001
-       D     →  010
-       MD    →  011
-       A     →  100
-       AM    →  101
-       AD    →  110
-       AMD   →  111
-   
+- Destination Translation:
 
-    III. Jump Translation:
- 
-       JGT   →  001
-       JEQ   →  010
-       JLT   →  100
-       JNE   →  110
-       JLE   →  110
-       JMP   →  111
+  M → 001
+  D → 010
+  MD → 011
+  A → 100
+  AM → 101
+  AD → 110
+  AMD → 111
 
+- Jump Translation:
+
+  JGT → 001
+  JEQ → 010
+  JLT → 100
+  JNE → 110
+  JLE → 110
+  JMP → 111
