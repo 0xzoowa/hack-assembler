@@ -1,6 +1,6 @@
 # hack-assembler
 
-# Precursor: The Hack Computer - Core Components, System Integration, ISA, and Assembly
+# The Hack Computer: From Basic Components to Program Execution (Assembly)
 
 ## Table of Contents
 
@@ -39,6 +39,28 @@ The NAND gate serves as the atomic building block for the entire Hack computer a
 - NOT gate: Implemented by connecting both NAND inputs together
 - AND gate: NAND followed by NOT
 - OR gate: Constructed using NAND gates via De Morgan's laws
+
+```
+    a  | b | NOT(a) = c | NOT(b) = d | NAND(c,d)
+    0  | 0 | 1          | 1          | 0
+    0  | 1 | 1          | 0          | 1
+    1  | 0 | 0          | 1          | 1
+    1  | 1 | 0          | 0          | 1
+
+    Conclusion : NAND(c,d) corresponds to OR output above
+    hence the OR CHIP IMPLEMENTATION is
+
+        CHIP Or {
+        IN a, b;
+        OUT out;
+
+        PARTS:
+        Not( in = a, out = notA);
+        Not( in = b, out = notB);
+        Nand( a = notA, b = notB, out = out);
+    }
+```
+
 - XOR gate: Built from a combination of NAND, AND, and OR gates
 
 ### Fundamental Multi-Bit Gates
@@ -49,7 +71,63 @@ Multi-bit gates operate on bus-width inputs (16-bit in Hack):
 - Multi-bit AND: Parallel AND operations
 - Multi-bit OR: Parallel OR operations
 - Multi-bit Multiplexer (Mux): Selects between two 16-bit inputs
+
+```
+s  | a | b            out
+--------------------------------
+0  | 0 | x             a
+0  | 1 | x             a
+
+1  | x | 0             b
+1  | x | 1             b
+
+s  | a | b            out
+--------------------------------
+0  | 0 | 0            a
+1  | 0 | 1            b
+0  | 1 | 0            a
+1  | 1 | 1            b
+
+!(sel).a + sel.b
+
+CHIP Mux {
+    IN a, b, sel;
+    OUT out;
+
+    PARTS:
+
+    Not( in = sel, out = Notsel);
+    And( a = Notsel, b = a, out = NotselAnda);
+    And( a = sel, b = b, out = selAndb);
+    Or( a = NotselAnda, b = selAndb, out = out);
+
+
+}
+```
+
 - Multi-bit Demultiplexer (DMux): Routes input to one of two 16-bit outputs
+
+```
+
+s                      a | b
+--------------------------------
+0                     in | 0
+1                     0  | in
+
+if 1, the input bit will be directed(channeled) into b : And(a = sel , b = in , out = b);
+if 0, the input bit will be directed(channeled) into a : And(a = Notsel , b = in , out = a);
+
+CHIP DMux {
+    IN in, sel;
+    OUT a, b;
+
+    PARTS:
+    Not(in = sel , out = Notsel);
+    And(a = Notsel , b = in , out = a);
+    And(a = sel , b = in , out = b);
+
+}
+```
 
 ### Arithmetic Components
 
