@@ -109,6 +109,7 @@ public class Parser
     private string Symbol()
     {
         var instruction = GetCurrentInstruction();
+            //Console.WriteLine($"current instruction: {instruction}");
         var aout = string.Empty;
         
         var iType = InstructionType();
@@ -116,7 +117,7 @@ public class Parser
         switch (iType)
         {
             /*
-             * 
+             * Improvements:
              *    - handle edge cases
              *    - error handling
              *    - memory management
@@ -143,7 +144,7 @@ public class Parser
                     aout = addr.ToString();
                 }
 
-                else if (!SymbolTable.Contains(part) && IsMatch(part, "^[a-z]+$"))
+                else if (!SymbolTable.Contains(part) )//&& IsMatch(part, "^[a-z]+$" pattern should include all valid variable name formats
                 {
                     SymbolTable.AddEntry(part,_memory );
                     _memory++;
@@ -173,7 +174,7 @@ public class Parser
     {
         var instruction = GetCurrentInstruction();
         
-        return instruction.Contains('=') ? instruction.Split('=')[0].Trim() : null;
+        return instruction.Contains('=') ? instruction.Split('=')[0] : null;
     }
     
     private string Comp()
@@ -206,7 +207,7 @@ public class Parser
     {
         var instruction = GetCurrentInstruction();
         
-        return instruction.Contains(';') ? instruction.Split(';')[1].Trim() : null;
+        return instruction.Contains(';') ? instruction.Split(';')[1] : null;
     }
 
     public IEnumerable<string> ParseInstruction() //second pass
@@ -230,9 +231,9 @@ public class Parser
                     var computation = Comp();
                     var jump = Jump();
                     var code = new HackInstructionSet();
-                    var destBinary = code.Dest(destination!.Trim());
-                    var compBinary = code.Comp(computation.Trim());
-                    var jumpBinary = code.Jump(jump.Trim()??"null");
+                    var destBinary = code.Dest(NormalizeCode(destination));
+                    var compBinary = code.Comp(computation);
+                    var jumpBinary = code.Jump(jump);
                     var instructionBinary = "111" + compBinary + destBinary + jumpBinary;
                     binaryRepresentation.Add(instructionBinary);
                     break;
@@ -281,6 +282,19 @@ public class Parser
 
         // Reset instruction counter before calling second pass
         _instructionCount = -1;
+    }
+    
+    private static string? NormalizeCode(string microcode)
+    {
+        if (microcode == null)
+        {
+            return null; 
+        }
+
+        var chars = microcode.ToCharArray();
+        Array.Sort(chars); // Sort characters alphabetically
+        //Console.WriteLine($"microcode:{microcode} normalized code : {new string(chars)}");
+        return new string(chars);
     }
 }
 

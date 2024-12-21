@@ -25,8 +25,7 @@ public class SymbolTable
         if (_instance == null)
         {
             _instance = new SymbolTable(custom);
-        }
-        return _instance;
+        } return _instance;
     }
 
 

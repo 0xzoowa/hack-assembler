@@ -67,7 +67,7 @@ public  class HackInstructionSet
                 { "JGE", "011" },
                 { "JLT", "100" },
                 { "JNE", "101" },
-                { "JLE", "11O" },
+                { "JLE", "110" },
                 { "JMP", "111" },
                 
             }
@@ -80,12 +80,12 @@ public  class HackInstructionSet
     }
 
 
-    public  string Dest(string microcode)
+    public  string Dest(string? microcode)
     {
         return string.IsNullOrWhiteSpace(microcode) ? _instructionSet["dest"]["null"] : _instructionSet["dest"][microcode];
     }
 
-    public  string Jump(string microcode)
+    public  string Jump(string? microcode)
     {
         return string.IsNullOrWhiteSpace(microcode) ? _instructionSet["jump"]["null"] : _instructionSet["jump"][microcode];
     }
