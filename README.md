@@ -1,6 +1,6 @@
 # hack-assembler
 
-# The Hack Computer => Core Components, System Integration, ISA, and Assembly
+# Precursor: The Hack Computer - Core Components, System Integration, ISA, and Assembly
 
 ## Table of Contents
 
